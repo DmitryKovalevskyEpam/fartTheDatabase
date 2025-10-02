@@ -2,6 +2,36 @@
 ## This is a Spring Boot application that manages users and their card information.
 
 ### Prerequisites
+- Ensure to install WSL
+  Run powershell under Administrative rights:
+```sh
+# Enable and Install HyperV as Windows feature
+Enable-WindowsOptionalFeature -Online -FeatureName:Microsoft-Hyper-V -All
+Set-ItemProperty -Path HKLM:\system\CurrentControlSet\services\Tcpip\Parameters -Name IpEnableRouter -Value 1
+# Enable and Install Windows-Subsystem-Linux as Windows feature
+dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart
+dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart
+dism.exe /Online /Enable-Feature /FeatureName:Microsoft-Hyper-V /All /norestart
+# Update WSL service
+wsl.exe --update
+## Show available destributives
+wsl --list --online
+# wsl --install -d Ubuntu-22.04
+# Download Ubuntu 22.04 distributive
+Invoke-WebRequest -Uri https://aka.ms/wslubuntu2004 -OutFile ubuntu2204.appx -UseBasicParsing
+# install downloaded *.appx file
+c:\work\Projects\EPAM\WSL\ubuntu2204.appx
+Add-AppxPackage .\ubuntu2204.appx
+wsl --set-default-version 2
+# Run WSL
+wsl
+## In WSL create new user
+sudo su
+user: vagrant
+password: vagrant
+
+```
+
 - Java 17 or later
   ```sh WSL
   sudo apt update
