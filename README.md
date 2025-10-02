@@ -4,36 +4,37 @@
 ### Prerequisites
 - Ensure to install WSL
   Run powershell under Administrative rights:
-```sh
-# Enable and Install HyperV as Windows feature
-Enable-WindowsOptionalFeature -Online -FeatureName:Microsoft-Hyper-V -All
-Set-ItemProperty -Path HKLM:\system\CurrentControlSet\services\Tcpip\Parameters -Name IpEnableRouter -Value 1
-# Enable and Install Windows-Subsystem-Linux as Windows feature
-dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart
-dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart
-dism.exe /Online /Enable-Feature /FeatureName:Microsoft-Hyper-V /All /norestart
-# Update WSL service
-wsl.exe --update
-## Show available destributives
-wsl --list --online
-# wsl --install -d Ubuntu-22.04
-# Download Ubuntu 22.04 distributive
-Invoke-WebRequest -Uri https://aka.ms/wslubuntu2004 -OutFile ubuntu2204.appx -UseBasicParsing
-# install downloaded *.appx file
-c:\work\Projects\EPAM\WSL\ubuntu2204.appx
-Add-AppxPackage .\ubuntu2204.appx
-wsl --set-default-version 2
-# Run WSL
-wsl
-## In WSL create new user
-sudo su
-user: vagrant
-password: vagrant
+  ```sh
+  # Enable and Install HyperV as Windows feature
+  Enable-WindowsOptionalFeature -Online -FeatureName:Microsoft-Hyper-V -All
+  Set-ItemProperty -Path HKLM:\system\CurrentControlSet\services\Tcpip\Parameters -Name IpEnableRouter -Value 1
+  # Enable and Install Windows-Subsystem-Linux as Windows feature
+  dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart
+  dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart
+  dism.exe /Online /Enable-Feature /FeatureName:Microsoft-Hyper-V /All /norestart
+  # Update WSL service
+  wsl.exe --update
+  ## Show available destributives
+  wsl --list --online
+  # wsl --install -d Ubuntu-22.04
+  # Download Ubuntu 22.04 distributive
+  Invoke-WebRequest -Uri https://aka.ms/wslubuntu2004 -OutFile ubuntu2204.appx -UseBasicParsing
+  # install downloaded *.appx file
+  c:\work\Projects\EPAM\WSL\ubuntu2204.appx
+  Add-AppxPackage .\ubuntu2204.appx
+  wsl --set-default-version 2
+  # Run WSL
+  wsl
+  ## In WSL create new user
+  sudo su
+  user: vagrant
+  password: vagrant
 
 ```
 
 - Java 17 or later
   ```sh WSL
+  sudo su
   sudo apt update
   sudo apt install openjdk-17-jdk
   java -version
@@ -88,6 +89,9 @@ password: vagrant
 To build the application from the command line, navigate to the root directory of the project (where the pom.xml is located) and run the following Maven command:
 
 ```sh
+source /etc/profile.d/java-home.sh
+source /etc/profile.d/maven.sh
+
 mvn clean package
 # or
 mvn clean package -DskipTests
@@ -115,8 +119,6 @@ docker-compose down -v
 ```bash
 liquibase --changeLogFile=src/main/resources/db/changelog/db.changelog-master.yaml \
           --url=jdbc:postgresql://localhost:5432/carddb --username=postgres --password=password update
-
-          src/main/resources/db/changelog/db.changelog-master.yaml
 ```
 
 This command will compile the source code, run the tests, and package the application into a JAR file in the target/ directory.
