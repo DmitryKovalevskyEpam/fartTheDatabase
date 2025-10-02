@@ -1,0 +1,32 @@
+databaseChangeLog:
+  - changeSet:
+      id: constraints-1
+      author: dev-team
+      changes:
+        # Удаляем старый foreign key если существует
+        - dropForeignKeyConstraint:
+            baseTableName: card_info
+            constraintName: fk_card_user
+
+        # Добавляем foreign key с каскадными операциями
+        - addForeignKeyConstraint:
+            baseTableName: card_info
+            baseColumnNames: user_id
+            referencedTableName: users
+            referencedColumnNames: id
+            constraintName: fk_card_user_cascade
+            onDelete: CASCADE
+            onUpdate: RESTRICT
+            deferrable: true
+            initiallyDeferred: false
+
+        # Добавляем check constraints
+        - addCheckConstraint:
+            tableName: users
+            constraintName: chk_users_birth_date
+            constraintBody: "birth_date < CURRENT_DATE"
+
+        - addCheckConstraint:
+            tableName: card_info
+            constraintName: chk_card_expiration_date
+            constraintBody: "expiration_date > CURRENT_DATE"

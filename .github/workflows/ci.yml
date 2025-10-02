@@ -1,0 +1,106 @@
+name: Java CI Pipeline
+
+on:
+  push:
+    branches: [ main, develop, feature/* ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  buildSecondAttempt:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: 'maven'
+
+    - name: Validate Maven POM
+      run: mvn validate
+
+    - name: Code Linting with Checkstyle
+      run: mvn checkstyle:check
+      continue-on-error: true
+
+    - name: Compile and Build
+      run: mvn compile -DskipTests
+
+    - name: Static Code Analysis with SpotBugs
+      run: mvn spotbugs:check
+      continue-on-error: true
+
+    ## Remarked too long execution
+    # - name: Dependency Check
+    #   run: mvn org.owasp:dependency-check-maven:check
+    #   continue-on-error: true  # Allows build to continue if vulnerabilities found
+
+    - name: Run Unit Tests
+      run: mvn test
+      continue-on-error: true
+
+    - name: Run Integration Tests
+      run: mvn verify -DskipUnitTests=false
+      continue-on-error: true
+
+    - name: Test Coverage Report
+      run: mvn jacoco:report
+      continue-on-error: true
+
+    - name: Upload Test Results
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-results
+        path: |
+          **/target/surefire-reports/
+          **/target/failsafe-reports/
+          **/target/site/jacoco/
+
+    - name: Upload Coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./target/site/jacoco/jacoco.xml
+        flags: unittests
+        name: codecov-umbrella
+
+    - name: Build JAR Package
+      run: mvn package -DskipTests
+
+    - name: Upload JAR Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: springboot-SecondApp
+        path: target/*.jar
+        retention-days: 5
+    - name: Build with Maven
+      run: mvn clean package -DskipTests
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Build Docker image
+      run: |
+        docker build -t card-service:latest .
+
+    - name: Save Docker image to tar file
+      run: |
+        docker save card-service:latest -o card-service-image.tar
+        gzip card-service-image.tar
+
+    - name: Upload Docker image as artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: docker-image
+        path: card-service-image.tar.gz
+        retention-days: 30
+
+    - name: Test loading the image
+      run: |
+        gunzip card-service-image.tar.gz
+        docker load -i card-service-image.tar
+        docker images

@@ -1,0 +1,88 @@
+databaseChangeLog:
+  - changeSet:
+      id: 003-1
+      author: dev-team
+      changes:
+        - insert:
+            tableName: users
+            columns:
+              - column:
+                  name: name
+                  value: "John"
+              - column:
+                  name: surname
+                  value: "Doe"
+              - column:
+                  name: birth_date
+                  value: "1990-01-15"
+              - column:
+                  name: email
+                  value: "john.doe@example.com"
+
+        - insert:
+            tableName: users
+            columns:
+              - column:
+                  name: name
+                  value: "Jane"
+              - column:
+                  name: surname
+                  value: "Smith"
+              - column:
+                  name: birth_date
+                  value: "1985-05-20"
+              - column:
+                  name: email
+                  value: "jane.smith@example.com"
+
+  - changeSet:
+      id: 003-2
+      author: dev-team
+      changes:
+        - insert:
+            tableName: card_info
+            columns:
+              - column:
+                  name: user_id
+                  valueComputed: "(SELECT id FROM users WHERE email = 'john.doe@example.com')"
+              - column:
+                  name: number
+                  value: "4111-1111-1111-1111"
+              - column:
+                  name: holder
+                  value: "JOHN DOE"
+              - column:
+                  name: expiration_date
+                  value: "2026-12-31"
+
+        - insert:
+            tableName: card_info
+            columns:
+              - column:
+                  name: user_id
+                  valueComputed: "(SELECT id FROM users WHERE email = 'john.doe@example.com')"
+              - column:
+                  name: number
+                  value: "5500-0000-0000-0004"
+              - column:
+                  name: holder
+                  value: "JOHN DOE"
+              - column:
+                  name: expiration_date
+                  value: "2025-10-15"
+
+        - insert:
+            tableName: card_info
+            columns:
+              - column:
+                  name: user_id
+                  valueComputed: "(SELECT id FROM users WHERE email = 'jane.smith@example.com')"
+              - column:
+                  name: number
+                  value: "3400-0000-0000-009"
+              - column:
+                  name: holder
+                  value: "JANE SMITH"
+              - column:
+                  name: expiration_date
+                  value: "2024-08-20"
