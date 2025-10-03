@@ -1,45 +1,56 @@
-version: '3.8'
-
 services:
-  postgres:
+  db:
     image: postgres:15
+    container_name: user-service-db
+    restart: always
     environment:
-      POSTGRES_DB: carddb
+      POSTGRES_DB: userservicedb
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
+      POSTGRES_PASSWORD: postgres
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql/data
     networks:
-      - card-network
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d userservicedb"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
 
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    networks:
-      - card-network
-
-  card-service:
+  app:
     build: .
+    container_name: user-service-app
+    depends_on:
+      db:
+        condition: service_healthy
     ports:
       - "8080:8080"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/carddb
-      SPRING_REDIS_HOST: redis
-    depends_on:
-      - postgres
-      - redis
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/userservicedb
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+      SPRING_JPA_HIBERNATE_DDL_AUTO: none
+      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
+      SPRING_JPA_PROPERTIES_HIBERNATE_DEFAULT_SCHEMA: public
+      SPRING_LIQUIBASE_CHANGE_LOG: classpath:db/changelog/db.changelog-master.xml
+      SPRING_LIQUIBASE_DEFAULT_SCHEMA: public
+      SPRING_DATASOURCE_HIKARI_CONNECTION_TIMEOUT: 60000
+      SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: 5
+      LOGGING_LEVEL_COM_EXAMPLE_SERSERVICEAPP: DEBUG
+      LOGGING_LEVEL_ORG_HIBERNATE_SQL: DEBUG
+      LOGGING_LEVEL_ORG_LIQUIBASE: INFO
     networks:
-      - card-network
+      - app-network
+    restart: on-failure
 
 volumes:
-  postgres_data:
-  redis_data:
+  pgdata:
 
 networks:
-  card-network:
+  app-network:
     driver: bridge
